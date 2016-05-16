@@ -91,6 +91,7 @@ unsigned numPasses = 1;
 bool profilingWithBackends = false;
 char* profilingCallsMetricsString;
 char* profilingFramesMetricsString;
+bool profilingFPS = false;
 char* profilingDrawCallsMetricsString;
 bool profilingListMetrics = false;
 bool profilingNumPasses = false;
@@ -110,10 +111,20 @@ unsigned callNo = 0;
 static void
 takeSnapshot(unsigned call_no);
 
+static long long frameEndTime = 0;
+static long long frameStartTime = 0;
 
 void
 frameComplete(trace::Call &call) {
+    frameEndTime = os::getTime();
+    
+    float timeInterval = (frameEndTime - frameStartTime) * (1.0 / os::timeFrequency);
+
     ++frameNo;
+    
+    if ((retrace::verbosity >= -1) && (retrace::profilingFPS)) {
+        std::cout << "FPS: " << 1.0f / timeInterval << std::endl;
+    }
 
     if (!(call.flags & trace::CALL_FLAG_END_FRAME) &&
         snapshotFrequency.contains(call)) {
@@ -121,6 +132,8 @@ frameComplete(trace::Call &call) {
         // now.
         takeSnapshot(call.no);
     }
+
+    frameStartTime = os::getTime();
 }
 
 class DefaultDumper: public Dumper
@@ -609,6 +622,7 @@ usage(const char *argv0) {
         "      --pmem              memory usage profiling (vsize rss per call)\n"
         "      --pcalls            call profiling metrics selection\n"
         "      --pframes           frame profiling metrics selection\n"
+        "	   --pfps			   per-frame FPS output\n"
         "      --pdrawcalls        draw call profiling metrics selection\n"
         "      --list-metrics      list all available metrics for TRACE\n"
         "      --gen-passes        generate profiling passes and output passes number\n"
@@ -647,6 +661,7 @@ enum {
     PMEM_OPT,
     PCALLS_OPT,
     PFRAMES_OPT,
+    PFPS_OPT,
     PDRAWCALLS_OPT,
     PLMETRICS_OPT,
     GENPASS_OPT,
@@ -683,6 +698,7 @@ longOptions[] = {
     {"pmem", no_argument, 0, PMEM_OPT},
     {"pcalls", required_argument, 0, PCALLS_OPT},
     {"pframes", required_argument, 0, PFRAMES_OPT},
+    {"pfps", no_argument, 0, PFPS_OPT },
     {"pdrawcalls", required_argument, 0, PDRAWCALLS_OPT},
     {"list-metrics", no_argument, 0, PLMETRICS_OPT},
     {"gen-passes", no_argument, 0, GENPASS_OPT},
@@ -884,6 +900,13 @@ int main(int argc, char **argv)
             retrace::verbosity = -1;
             retrace::profilingWithBackends = true;
             retrace::profilingFramesMetricsString = optarg;
+            break;
+        case PFPS_OPT:
+            retrace::debug = 0;
+            retrace::profiling = true;
+            retrace::verbosity = -1;
+            retrace::profilingWithBackends = true;
+            retrace::profilingFPS = true;
             break;
         case PDRAWCALLS_OPT:
             retrace::debug = 0;

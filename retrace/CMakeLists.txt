@@ -232,7 +232,7 @@ if (ENABLE_EGL)
     endif ()
 endif ()
 
-if (WIN32)
+if (WIN32 AND ENABLE_DIRECTX)
     if (DirectX_D3D_INCLUDE_FOUND)
         include_directories (BEFORE SYSTEM ${DirectX_D3D_INCLUDE_DIR})
         add_custom_command (

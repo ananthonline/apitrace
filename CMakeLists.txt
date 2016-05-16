@@ -44,6 +44,8 @@ option (ENABLE_FRAME_POINTER "Disable frame pointer omission" ON)
 
 option (ENABLE_ASAN "Enable Address Sanitizer" OFF)
 
+option (ENABLE_DIRECTX "Enable DirectX support" ON)
+
 # Proprietary Linux games often ship their own libraries (zlib, libstdc++,
 # etc.) in order to ship a single set of binaries across multiple
 # distributions.  Given that apitrace wrapper modules will be loaded into those
@@ -144,18 +146,20 @@ if (WIN32)
         # Windows 8
         add_definitions (-D_WIN32_WINNT=0x0602 -DWINVER=0x0602)
     endif ()
+	
+	if (ENABLE_DIRECTX)
+		find_package (DirectX)
 
-    find_package (DirectX)
-
-    if (WINDOWS_XP)
-        set (DirectX_D3D11_3_INCLUDE_FOUND FALSE)
-    elseif (DEFINED MSVC_VERSION AND NOT DirectX_D3D11_3_INCLUDE_FOUND)
-        if (${MSVC_VERSION} LESS 1900)
-            message (FATAL_ERROR "Windows 10 SDK (https://dev.windows.com/en-us/downloads/windows-10-sdk) must be installed for D3D11.3 support")
-        else ()
-            message (FATAL_ERROR "Windows 10 SDK must be selected (-DCMAKE_SYSTEM_VERSION=10.0) for D3D11.3 support")
-        endif ()
-    endif ()
+		if (WINDOWS_XP)
+			set (DirectX_D3D11_3_INCLUDE_FOUND FALSE)
+		elseif (DEFINED MSVC_VERSION AND NOT DirectX_D3D11_3_INCLUDE_FOUND)
+			if (${MSVC_VERSION} LESS 1900)
+				message (FATAL_ERROR "Windows 10 SDK (https://dev.windows.com/en-us/downloads/windows-10-sdk) must be installed for D3D11.3 support")
+			else ()
+				message (FATAL_ERROR "Windows 10 SDK must be selected (-DCMAKE_SYSTEM_VERSION=10.0) for D3D11.3 support")
+			endif ()
+		endif ()
+	endif ()
 
     set (ENABLE_EGL false)
 elseif (APPLE)

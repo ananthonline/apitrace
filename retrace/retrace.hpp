@@ -132,6 +132,7 @@ extern unsigned numPasses;
 extern bool profilingWithBackends;
 extern char* profilingCallsMetricsString;
 extern char* profilingFramesMetricsString;
+extern bool profilingFPS;
 extern char* profilingDrawCallsMetricsString;
 extern bool profilingListMetrics;
 extern bool profilingNumPasses;
