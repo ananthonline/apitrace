@@ -188,6 +188,9 @@ showWindow(HWND hWnd)
     if (!headless) {
         ShowWindow(hWnd, SW_SHOW);
     }
+    else {
+        ShowWindow(hWnd, SW_HIDE);
+    }
 }
 
 
